@@ -247,9 +247,9 @@ vector<ScanResult> scanImage(ImageScanner& scanner, const cv::Mat& rawImage,
 }
 
 void printResult(map<string, double> result, string qr_data) {
-	cout << "{\"qr\":" << '"' << qr_data << '"';
+	cout << "{\"qr_data\":" << '"' << qr_data << '"';
 	for (auto&& field : result) {
-		cout << ',"' << field.first << "\":" << field.second;
+		cout << ",\"" << field.first << "\":" << field.second;
 	}
 	cout << "}" << endl;
 }
