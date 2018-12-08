@@ -157,6 +157,7 @@ map<string, SVGShape> findSVGShapes(const string filename, cv::Size& outPageSize
 }
 
 struct ScanResult {
+	string qr_data;
 	map<string, double> values;
 	cv::Mat preview;
 };
@@ -235,7 +236,7 @@ vector<ScanResult> scanImage(ImageScanner& scanner, const cv::Mat& rawImage,
 
 				cv::Mat combinedView;
 				cv::hconcat(preview, threshColor, combinedView);
-				results.push_back(ScanResult { bubbles, combinedView });
+				results.push_back(ScanResult { data, bubbles, combinedView });
 			}
 		}
 	}
@@ -245,16 +246,10 @@ vector<ScanResult> scanImage(ImageScanner& scanner, const cv::Mat& rawImage,
 	return results;
 }
 
-void printResult(map<string, double> result) {
-	bool first = true;
-	cout << "{";
+void printResult(map<string, double> result, string qr_data) {
+	cout << "{\"qr\":" << '"' << qr_data << '"';
 	for (auto&& field : result) {
-		if (first) {
-			first = false;
-		} else {
-			cout << ',';
-		}
-		cout << '"' << field.first << "\":" << field.second;
+		cout << ',"' << field.first << "\":" << field.second;
 	}
 	cout << "}" << endl;
 }
@@ -327,7 +322,7 @@ int main(int argc, char **argv) {
 			}
 
 			if (scanRequested) {
-				auto results = scanImage(scanner, rawImage, pageSize, qrBox, shapes);
+				vector<ScanResult> results = scanImage(scanner, rawImage, pageSize, qrBox, shapes);
 
 				if (results.size() > 0) {
 					cerr << "Found " << results.size() << " successful form." << endl;
@@ -337,7 +332,7 @@ int main(int argc, char **argv) {
 				for (auto&& result : results) {
 					imshow(windowName, result.preview);
 					if (cv::waitKey(0) == KEY_A) {
-						printResult(result.values);
+						printResult(result.values, result.qr_data);
 					}
 				}
 			}
@@ -354,7 +349,7 @@ int main(int argc, char **argv) {
 		for (auto&& result : results) {
 			imshow(windowName, result.preview);
 			if (cv::waitKey(0) == KEY_A) {
-				printResult(result.values);
+				printResult(result.values, result.qr_data);
 			}
 		}
 
